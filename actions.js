@@ -1,144 +1,87 @@
+const { resolveCueId, sendWsAction } = require('./cueUtils.js')
+
+function buildCueTargetOptions(self) {
+	return [
+		{
+			type: 'dropdown',
+			id: 'cueNumber',
+			label: 'Cue (grid position)',
+			default: '1',
+			choices:
+				self.cues && self.cues.length > 0
+					? self.cues.map((cue, idx) => ({
+							id: String(idx + 1),
+							label: `${idx + 1}: ${cue.name || cue.id}`,
+						}))
+					: [{ id: '1', label: '1: (no cues)' }],
+			tooltip: 'Select cue by grid position (layout order).',
+		},
+		{
+			type: 'textinput',
+			id: 'cueId',
+			label: 'Cue ID (optional override)',
+			default: '',
+			tooltip: 'Use a specific cue ID instead of grid position when set.',
+		},
+	]
+}
+
 function getActionDefinitions(self) {
 	const actions = {}
 
 	actions['stop_all'] = {
 		name: 'Stop All Audio',
 		options: [],
-		callback: (action) => {
-			if (self.ws && self.ws.readyState === 1) {
-				self.ws.send(
-					JSON.stringify({
-						action: 'stopAllCues',
-						payload: {
-							behavior: 'fade_out_and_stop',
-						},
-					}),
-				)
-			}
+		callback: () => {
+			sendWsAction(self, 'stopAllCues', { behavior: 'fade_out_and_stop' })
 		},
 	}
 
-	const cueNumberOption = {
-		type: 'dropdown',
-		id: 'cueNumber',
-		label: 'Cue',
-		default: '1',
-		choices:
-			self.cues && self.cues.length > 0
-				? self.cues.map((cue, idx) => ({ id: String(idx + 1), label: `${idx + 1}: ${cue.name || cue.id}` }))
-				: [{ id: '1', label: '1: (no cues)' }],
-		tooltip: 'Select cue by name (mapped by index).',
-	}
+	const cueNumberOption = buildCueTargetOptions(self)[0]
 
-	async function resolveCueIdFromOptions(options) {
-		try {
-			const raw = options && options.cueNumber != null ? String(options.cueNumber) : '1'
-			const parsed = self.parseVariablesInString ? await self.parseVariablesInString(raw) : raw
-			const index = parseInt(parsed, 10) - 1
-			if (!Number.isNaN(index) && index >= 0 && self.cues && self.cues[index]) {
-				return self.cues[index].id
-			}
-			return null
-		} catch (e) {
-			self.log('debug', `Failed to resolve cue number: ${e}`)
-			return null
+	async function triggerCueAction(actionName, wsAction, options, label) {
+		const cueId = await resolveCueId(self, options)
+		if (!cueId) {
+			self.log('warn', `${label}: Cue not found or invalid target`)
+			return
 		}
+		sendWsAction(self, wsAction, { cueId })
 	}
 
 	actions['play_cue'] = {
 		name: 'Play Cue',
-		options: [cueNumberOption],
-		callback: async (action) => {
-			const cueId = await resolveCueIdFromOptions(action.options)
-			if (!cueId) {
-				self.log('warn', 'Play Cue: Cue number out of range or invalid')
-				return
-			}
-			if (self.ws && self.ws.readyState === 1) {
-				self.ws.send(JSON.stringify({ action: 'playCue', payload: { cueId } }))
-			}
-		},
+		options: buildCueTargetOptions(self),
+		callback: async (action) => triggerCueAction('play_cue', 'playCue', action.options, 'Play Cue'),
 	}
 
 	actions['stop_cue'] = {
 		name: 'Stop Cue',
-		options: [cueNumberOption],
-		callback: async (action) => {
-			const cueId = await resolveCueIdFromOptions(action.options)
-			if (!cueId) {
-				self.log('warn', 'Stop Cue: Cue number out of range or invalid')
-				return
-			}
-			if (self.ws && self.ws.readyState === 1) {
-				self.ws.send(JSON.stringify({ action: 'stopCue', payload: { cueId } }))
-			}
-		},
+		options: buildCueTargetOptions(self),
+		callback: async (action) => triggerCueAction('stop_cue', 'stopCue', action.options, 'Stop Cue'),
 	}
 
 	actions['toggle_cue'] = {
 		name: 'Trigger Cue',
-		options: [cueNumberOption],
-		callback: async (action) => {
-			const cueId = await resolveCueIdFromOptions(action.options)
-			if (!cueId) {
-				self.log('warn', 'Trigger Cue: Cue number out of range or invalid')
-				return
-			}
-			if (self.ws && self.ws.readyState === 1) {
-				self.ws.send(
-					JSON.stringify({
-						action: 'toggleCue',
-						payload: { cueId },
-					}),
-				)
-			}
-		},
+		options: buildCueTargetOptions(self),
+		callback: async (action) => triggerCueAction('toggle_cue', 'toggleCue', action.options, 'Trigger Cue'),
 	}
 
 	actions['playlist_navigate_next'] = {
 		name: 'Playlist Navigate Next',
 		options: [cueNumberOption],
-		callback: async (action) => {
-			const cueId = await resolveCueIdFromOptions(action.options)
-			if (!cueId) {
-				self.log('warn', 'Playlist Navigate Next: Cue number out of range or invalid')
-				return
-			}
-			if (self.ws && self.ws.readyState === 1) {
-				self.ws.send(
-					JSON.stringify({
-						action: 'playlistNavigateNext',
-						payload: { cueId },
-					}),
-				)
-			}
-		},
+		callback: async (action) => triggerCueAction('playlist_navigate_next', 'playlistNavigateNext', action.options, 'Playlist Navigate Next'),
 	}
 
 	actions['playlist_navigate_previous'] = {
 		name: 'Playlist Navigate Previous',
 		options: [cueNumberOption],
-		callback: async (action) => {
-			const cueId = await resolveCueIdFromOptions(action.options)
-			if (!cueId) {
-				self.log('warn', 'Playlist Navigate Previous: Cue number out of range or invalid')
-				return
-			}
-			if (self.ws && self.ws.readyState === 1) {
-				self.ws.send(
-					JSON.stringify({
-						action: 'playlistNavigatePrevious',
-						payload: { cueId },
-					}),
-				)
-			}
-		},
+		callback: async (action) => triggerCueAction('playlist_navigate_previous', 'playlistNavigatePrevious', action.options, 'Playlist Navigate Previous'),
 	}
 
 	actions['playlist_jump_to_item'] = {
 		name: 'Playlist Jump to Item',
 		options: [
-			cueNumberOption,
+			...buildCueTargetOptions(self),
 			{
 				type: 'textinput',
 				id: 'targetIndex',
@@ -148,9 +91,9 @@ function getActionDefinitions(self) {
 			},
 		],
 		callback: async (action) => {
-			const cueId = await resolveCueIdFromOptions(action.options)
+			const cueId = await resolveCueId(self, action.options)
 			if (!cueId) {
-				self.log('warn', 'Playlist Jump to Item: Cue number out of range or invalid')
+				self.log('warn', 'Playlist Jump to Item: Cue not found or invalid target')
 				return
 			}
 			const targetIndexRaw = action.options.targetIndex != null ? String(action.options.targetIndex) : '0'
@@ -160,18 +103,103 @@ function getActionDefinitions(self) {
 				self.log('warn', 'Playlist Jump to Item: Invalid target index')
 				return
 			}
-			if (self.ws && self.ws.readyState === 1) {
-				self.ws.send(
-					JSON.stringify({
-						action: 'playlistJumpToItem',
-						payload: {
-							cueId,
-							targetIndex,
-						},
-					}),
-				)
-			}
+			sendWsAction(self, 'playlistJumpToItem', { cueId, targetIndex })
 		},
+	}
+
+	actions['set_cue_volume'] = {
+		name: 'Set Cue Volume',
+		options: [
+			...buildCueTargetOptions(self),
+			{
+				type: 'number',
+				id: 'volume',
+				label: 'Volume (0-100)',
+				default: 100,
+				min: 0,
+				max: 100,
+			},
+			{
+				type: 'checkbox',
+				id: 'persist',
+				label: 'Persist volume to cue',
+				default: true,
+			},
+		],
+		callback: async (action) => {
+			const cueId = await resolveCueId(self, action.options)
+			if (!cueId) {
+				self.log('warn', 'Set Cue Volume: Cue not found or invalid target')
+				return
+			}
+			const volumePercent = Number(action.options.volume)
+			const volume = Math.max(0, Math.min(1, (Number.isNaN(volumePercent) ? 100 : volumePercent) / 100))
+			sendWsAction(self, 'setCueVolume', {
+				cueId,
+				volume,
+				persist: action.options.persist !== false,
+			})
+		},
+	}
+
+	actions['seek_cue'] = {
+		name: 'Seek Cue',
+		options: [
+			...buildCueTargetOptions(self),
+			{
+				type: 'number',
+				id: 'positionSec',
+				label: 'Position (seconds)',
+				default: 0,
+				min: 0,
+			},
+		],
+		callback: async (action) => {
+			const cueId = await resolveCueId(self, action.options)
+			if (!cueId) {
+				self.log('warn', 'Seek Cue: Cue not found or invalid target')
+				return
+			}
+			sendWsAction(self, 'seekCue', {
+				cueId,
+				positionSec: Number(action.options.positionSec) || 0,
+				finalizeScrub: true,
+			})
+		},
+	}
+
+	actions['prepare_seek'] = {
+		name: 'Prepare Seek (scrub start)',
+		options: buildCueTargetOptions(self),
+		callback: async (action) => {
+			const cueId = await resolveCueId(self, action.options)
+			if (!cueId) {
+				self.log('warn', 'Prepare Seek: Cue not found or invalid target')
+				return
+			}
+			sendWsAction(self, 'prepareSeek', { cueId })
+		},
+	}
+
+	if (self.cues && self.cues.length > 0) {
+		self.cues.forEach((cue) => {
+			const cueLabel = cue.name || cue.id
+			actions[`play_cue_${cue.id}`] = {
+				name: `Play: ${cueLabel}`,
+				options: [],
+				callback: async () => sendWsAction(self, 'playCue', { cueId: cue.id }),
+			}
+			actions[`stop_cue_${cue.id}`] = {
+				name: `Stop: ${cueLabel}`,
+				options: [],
+				callback: async () => sendWsAction(self, 'stopCue', { cueId: cue.id }),
+			}
+			actions[`toggle_cue_${cue.id}`] = {
+				name: `Trigger: ${cueLabel}`,
+				options: [],
+				callback: async () => sendWsAction(self, 'toggleCue', { cueId: cue.id }),
+			}
+		})
 	}
 
 	return actions

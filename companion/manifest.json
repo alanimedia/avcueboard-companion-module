@@ -3,7 +3,7 @@
 	"name": "accompaniment",
 	"shortname": "accompaniment",
 	"description": "Connects to the AcCompaniment app via a websocket server",
-	"version": "1.2.1",
+	"version": "1.3.0",
 	"license": "MIT",
 	"repository": "git+https://github.com/alanimedia/acCompanimentAlt-companion-module.git",
 	"bugs": "https://github.com/alanimedia/acCompanimentAlt-companion-module/issues",

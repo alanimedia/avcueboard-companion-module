@@ -3,6 +3,7 @@ const WebSocket = require('ws')
 const { getConfigFields } = require('./config.js') // Import from config.js
 const { getActionDefinitions } = require('./actions.js') // Import from actions.js
 const { getVariableDefinitions, getVariableDefinitionsDynamic, updateVariablesForCue } = require('./variables.js') // Import from variables.js
+const { orderCuesFromPayload } = require('./cueUtils.js')
 
 const MAX_CUES_FOR_VARIABLES = 20 // Legacy default for initial grid; dynamic defs will supersede on cue list
 
@@ -10,7 +11,9 @@ class SoundboardInstance extends InstanceBase {
 	constructor(internal) {
 		super(internal)
 		this.ws = null
-		this.cues = [] // Store the cues received from the soundboard app
+		this.cues = [] // Store the cues received from the soundboard app (layout order)
+		this.sections = []
+		this.layout = []
 		this.reconnectInterval = null
 		this.currentlyPlayingCueId = null // Track which cue is considered "currently playing"
 		this.cuePlayStates = {} // cueId: 'playing' | 'paused' | 'stopped' | 'fading'
@@ -88,9 +91,11 @@ class SoundboardInstance extends InstanceBase {
 				const message = JSON.parse(data)
 				this.log('debug', `Received message: ${JSON.stringify(message)}`)
 
-				if (message.event === 'cuesListUpdate' && message.payload && Array.isArray(message.payload.cues)) {
-					this.cues = message.payload.cues
-					this.log('info', `Received ${this.cues.length} cues from acCompaniment.`)
+				if (message.event === 'cuesListUpdate' && message.payload) {
+					this.cues = orderCuesFromPayload(message.payload)
+					this.sections = Array.isArray(message.payload.sections) ? message.payload.sections : []
+					this.layout = Array.isArray(message.payload.layout) ? message.payload.layout : []
+					this.log('info', `Received ${this.cues.length} cues from acCompaniment (layout order).`)
 					this.initActions()
 					this.initPresets()
 					// Rebuild variable definitions to match the live cue list
@@ -118,6 +123,7 @@ class SoundboardInstance extends InstanceBase {
 							[`${currentlyPlayingPrefix}_remaining_sec`]: 0,
 						})
 					}
+					this.checkFeedbacks('cue_app_color')
 				} else if (message.event === 'cueStatus' && message.payload) {
 					// Handle legacy cueStatus events for feedback compatibility
 					const cueId = message.payload.cueId
@@ -145,7 +151,7 @@ class SoundboardInstance extends InstanceBase {
 							} else {
 								delete this.cueFadeStates[cueId]
 							}
-							this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped', 'cue_is_fading', 'cue_is_fading_in', 'cue_is_fading_out')
+							this.checkFeedbacks('cue_app_color', 'cue_is_playing', 'cue_is_paused', 'cue_is_stopped', 'cue_is_fading', 'cue_is_fading_in', 'cue_is_fading_out')
 						}
 					}
 				} else if (message.event === 'playbackTimeUpdate' && message.payload) {
@@ -167,10 +173,10 @@ class SoundboardInstance extends InstanceBase {
 								updateVariablesForCue(this, message.payload, { setAsCurrentNow })
 								// Clear fade feedbacks if it was fading before
 								if (oldStatus === 'fading') {
-									this.checkFeedbacks('cue_is_fading_in', 'cue_is_fading_out', 'cue_is_fading')
+									this.checkFeedbacks('cue_app_color', 'cue_is_fading_in', 'cue_is_fading_out', 'cue_is_fading')
 								}
 								if (oldStatus !== status) {
-									this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped')
+									this.checkFeedbacks('cue_app_color', 'cue_is_playing', 'cue_is_paused', 'cue_is_stopped')
 								}
 							} else if (status === 'fading') {
 								// Store fade state for feedbacks
@@ -187,10 +193,10 @@ class SoundboardInstance extends InstanceBase {
 									oldFadeState.isFadingOut !== newFadeState.isFadingOut
 								if (oldStatus !== status) {
 									// Status changed to fading
-									this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped', 'cue_is_fading', 'cue_is_fading_in', 'cue_is_fading_out')
+									this.checkFeedbacks('cue_app_color', 'cue_is_playing', 'cue_is_paused', 'cue_is_stopped', 'cue_is_fading', 'cue_is_fading_in', 'cue_is_fading_out')
 								} else if (fadeDirectionChanged) {
 									// Fade direction changed while status remained fading
-									this.checkFeedbacks('cue_is_fading_in', 'cue_is_fading_out')
+									this.checkFeedbacks('cue_app_color', 'cue_is_fading_in', 'cue_is_fading_out')
 								}
 							} else {
 								// Clear fade state when not fading
@@ -198,7 +204,7 @@ class SoundboardInstance extends InstanceBase {
 								this.cuePlayStates[cueId] = status
 								updateVariablesForCue(this, message.payload, { setAsCurrentNow })
 								if (oldStatus !== status) {
-									this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped', 'cue_is_fading', 'cue_is_fading_in', 'cue_is_fading_out')
+									this.checkFeedbacks('cue_app_color', 'cue_is_playing', 'cue_is_paused', 'cue_is_stopped', 'cue_is_fading', 'cue_is_fading_in', 'cue_is_fading_out')
 								}
 							}
 

@@ -1,63 +1,119 @@
 const { combineRgb } = require('@companion-module/base')
+const { getCueButtonColors } = require('./cueUtils.js')
+
+function buildCueColorStyle(cue) {
+	const colors = getCueButtonColors(cue)
+	return {
+		color: combineRgb(colors.color.r, colors.color.g, colors.color.b),
+		bgcolor: combineRgb(colors.bgcolor.r, colors.bgcolor.g, colors.bgcolor.b),
+	}
+}
+
+function buildCuePlaybackFeedbacks(cue) {
+	return [
+		{
+			feedbackId: 'cue_app_color',
+			options: { cueId: cue.id },
+		},
+		{
+			feedbackId: 'cue_is_playing',
+			options: { cueId: cue.id },
+			style: {
+				bgcolor: combineRgb(34, 139, 34),
+			},
+		},
+		{
+			feedbackId: 'cue_is_paused',
+			options: { cueId: cue.id },
+			style: {
+				bgcolor: combineRgb(255, 165, 0),
+			},
+		},
+		{
+			feedbackId: 'cue_is_fading_in',
+			options: { cueId: cue.id },
+			style: {
+				bgcolor: combineRgb(255, 165, 0),
+			},
+		},
+		{
+			feedbackId: 'cue_is_fading_out',
+			options: { cueId: cue.id },
+			style: {
+				bgcolor: combineRgb(255, 100, 0),
+			},
+		},
+	]
+}
 
 function getPresetDefinitions(self) {
 	const presets = []
 
-	// Emit a number of presets that reference variables and cue numbers
-	const presetCount = Math.max(1, (self.cues && self.cues.length) || 20)
-	for (let i = 1; i <= presetCount; i++) {
-		presets.push({
-			type: 'button',
-			category: 'Sound Cues',
-			name: `Cue ${i}`,
-			style: {
-				text: `$(instance:cue_${i}_name)`,
-				size: 'auto',
-				color: combineRgb(255, 255, 255),
-				bgcolor: combineRgb(0, 0, 0),
-			},
-			steps: [
-				{
-					down: [
-						{
-							actionId: `toggle_cue`,
-							options: { cueNumber: `${i}` },
-						},
-					],
-					up: [],
+	if (self.cues && self.cues.length > 0) {
+		self.cues.forEach((cue, index) => {
+			const style = buildCueColorStyle(cue)
+			presets.push({
+				type: 'button',
+				category: 'Sound Cues',
+				name: `${index + 1}: ${cue.name || cue.id}`,
+				style: {
+					text: cue.name || `Cue ${index + 1}`,
+					size: 'auto',
+					...style,
 				},
-			],
-			feedbacks: [
-				{
-					feedbackId: 'cue_is_playing',
-					options: { cueNumber: `${i}` },
-					style: {
-						bgcolor: combineRgb(0, 160, 0),
+				steps: [
+					{
+						down: [
+							{
+								actionId: `toggle_cue_${cue.id}`,
+								options: {},
+							},
+						],
+						up: [],
 					},
-				},
-				{
-					feedbackId: 'cue_is_paused',
-					options: { cueNumber: `${i}` },
-					style: {
-						bgcolor: combineRgb(255, 165, 0),
-					},
-				},
-				{
-					feedbackId: 'cue_is_fading_in',
-					options: { cueNumber: `${i}` },
-					style: {
-						bgcolor: combineRgb(255, 165, 0), // Orange/amber for fading in
-					},
-				},
-				{
-					feedbackId: 'cue_is_fading_out',
-					options: { cueNumber: `${i}` },
-					style: {
-						bgcolor: combineRgb(255, 100, 0), // Darker orange/red for fading out
-					},
-				},
-			],
+				],
+				feedbacks: buildCuePlaybackFeedbacks(cue),
+			})
 		})
+	} else {
+		const presetCount = 20
+		for (let i = 1; i <= presetCount; i++) {
+			presets.push({
+				type: 'button',
+				category: 'Sound Cues',
+				name: `Cue ${i}`,
+				style: {
+					text: `$(instance:cue_${i}_name)`,
+					size: 'auto',
+					color: combineRgb(255, 255, 255),
+					bgcolor: combineRgb(0, 0, 0),
+				},
+				steps: [
+					{
+						down: [
+							{
+								actionId: 'toggle_cue',
+								options: { cueNumber: `${i}` },
+							},
+						],
+						up: [],
+					},
+				],
+				feedbacks: [
+					{
+						feedbackId: 'cue_app_color',
+						options: { cueNumber: `${i}` },
+					},
+					{
+						feedbackId: 'cue_is_playing',
+						options: { cueNumber: `${i}` },
+						style: {
+							bgcolor: combineRgb(34, 139, 34),
+						},
+					},
+				],
+			})
+		}
 	}
 
 	presets.push({

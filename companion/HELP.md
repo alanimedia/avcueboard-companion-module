@@ -1,22 +1,32 @@
-# Companion Module: Highpass acCompaniment
+# Companion Module: acCompanimentAlt
 
-This module connects Bitfocus Companion to the acCompaniment Electron application.
+This module connects Bitfocus Companion to the acCompanimentAlt Electron application.
+
+You can find acCompanimentAlt here:
+https://github.com/alanimedia/acCompanimentAlt
 
 ## Configuration
 
-- **acCompaniment IP Address**: The IP address of the machine running the acCompaniment app (default: `127.0.0.1`).
-- **acCompaniment Port**: The port number the acCompaniment app is listening on (default: `8080`).
-- **Attempt Reconnect**: If checked, the module will attempt to reconnect if the connection is lost.
+- **acCompaniment IP Address**: The IP address of the machine running acCompanimentAlt (default: `127.0.0.1`).
+- **acCompaniment Port**: The WebSocket port from App Config (default: `8877`). This is **not** the HTTP remote port.
+- **Attempt Reconnect**: If checked, the module reconnects automatically after a disconnect.
 
 ## Features
 
-- Dynamically creates actions and presets for each sound cue configured in the Soundboard app.
-- Provides actions to play and stop individual cues.
-- Provides an action to stop all playing audio.
-- (Planned) Feedbacks to show the playing state of cues.
+- Per-cue actions keyed by cue ID (stable across reordering) plus grid-position actions
+- Cue list and presets follow the app's grid layout order (sections supported since 1.5.3)
+- Playback, stop, trigger, playlist navigation, live volume, and seek actions (1.5.5+)
+- Variables and feedbacks for playback time, fade state, and current cue
+- Preset buttons use each cue's custom `buttonColor` when configured
 
 ## Setup
 
-1.  Run the acCompaniment Electron application.
-2.  In Bitfocus Companion, add a new instance of the "Highpass acCompaniment" module.
-3.  Configure the IP address and port to match your acCompaniment application settings.
+1. Run acCompanimentAlt and confirm WebSocket is enabled in App Config.
+2. In Bitfocus Companion, add an instance of this module.
+3. Set the IP and WebSocket port (`8877` by default).
+4. Import presets or assign actions — use **Trigger: &lt;cue name&gt;** actions for the most reliable cue targeting.
+
+## Troubleshooting
+
+- If buttons stop working after an app update, re-import presets or switch actions to the per-cue **Trigger: ...** entries.
+- Confirm Companion connects on the WebSocket port, not the HTTP remote port (`3000` by default).
