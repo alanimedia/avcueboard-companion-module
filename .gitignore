@@ -5,3 +5,4 @@ dist/
 pkg/
 *.tgz
 !packages/*.tgz
+package-lock.json
