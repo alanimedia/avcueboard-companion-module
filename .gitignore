@@ -4,3 +4,4 @@ dist/
 *.log
 pkg/
 *.tgz
+!packages/*.tgz

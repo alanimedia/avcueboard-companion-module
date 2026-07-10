@@ -5,15 +5,30 @@ Companion module for **[AV Cueboard](https://github.com/alanimedia/avcueboard)**
 ## Requirements
 
 - **AV Cueboard** app v1.10.0+ with WebSocket enabled (default port **8877**)
-- Bitfocus Companion 3.x+
-- Node.js 18+ and Yarn 1 (for manual / local install)
+- Bitfocus Companion 3.x / 4.x+
+
+## Download packaged module (Companion 4.x)
+
+Ready-to-install package (no Node/Yarn needed on the Companion machine):
+
+**[alanimedia-avcueboard-1.10.0.tgz](https://github.com/alanimedia/avcueboard-companion-module/raw/main/packages/alanimedia-avcueboard-1.10.0.tgz)**
+
+### Install in Companion 4.x (recommended)
+
+1. Download the `.tgz` above.
+2. Open Companion Admin → **Modules**.
+3. Use **Import / Install custom module** and select the `.tgz`.
+4. Go to **Connections** → add **Alani Media → AVCueboard**.
+5. Host: IP of the AV Cueboard PC (`127.0.0.1` if same machine). Port: **8877**.
+
+When the module is approved on the [Connections](https://bitfocus.io/connections) store, prefer installing from there instead.
 
 ## Repositories
 
 | Component | Repository |
 |---|---|
 | App | https://github.com/alanimedia/avcueboard |
-| This module (Alani Media) | https://github.com/alanimedia/avcueboard-companion-module |
+| This module | https://github.com/alanimedia/avcueboard-companion-module |
 | Bitfocus store repo (when available) | https://github.com/bitfocus/companion-module-alanimedia-avcueboard |
 
 ## Install from Connections (when approved)
@@ -23,22 +38,14 @@ Companion module for **[AV Cueboard](https://github.com/alanimedia/avcueboard)**
 3. Set host IP and WebSocket port (`8877` default).
 4. Import presets or assign per-cue actions.
 
-## Manual install (until Bitfocus store approval)
+## Alternative: developer modules path
 
-1. Create a developer modules folder, e.g. `C:\companion-module-dev`.
-2. Clone this repo **into** that folder:
-   ```bash
-   cd C:\companion-module-dev
-   git clone https://github.com/alanimedia/avcueboard-companion-module.git
-   cd avcueboard-companion-module
-   yarn install
-   yarn build
-   ```
-3. In the Companion launcher, open the **cog** and set **Developer modules path** to `C:\companion-module-dev` (the parent folder).
-4. Restart Companion, then add **Alani Media → AVCueboard** under Connections.
+For live development, clone this repo into a developer modules folder and point Companion’s **Developer modules path** at the parent directory. See [Bitfocus local modules docs](https://companion.free/for-developers/module-development/local-modules/).
 
-Full steps are also in the [AV Cueboard README](https://github.com/alanimedia/avcueboard#manual-module-install-until-store-approval).  
-Bitfocus docs: [Local / developer modules](https://companion.free/for-developers/module-development/local-modules/)
+```bash
+yarn install
+yarn build
+```
 
 HTTP remote (port **3000** default) is for the web/iPad UI — not Companion.
 
@@ -46,10 +53,10 @@ HTTP remote (port **3000** default) is for the web/iPad UI — not Companion.
 
 ```bash
 yarn install
-yarn build
+yarn build   # also produces alanimedia-avcueboard-<version>.tgz
 ```
 
-Enable commit hooks: `yarn setup:hooks` (or `npm run setup:hooks`).
+Copy the new `.tgz` into [`packages/`](packages/) when cutting a release. Enable commit hooks: `yarn setup:hooks`.
 
 ## License & credits
 
