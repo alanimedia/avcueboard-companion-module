@@ -3,14 +3,14 @@ function getConfigFields() {
 		{
 			type: 'textinput',
 			id: 'host',
-			label: 'acCompaniment IP Address',
+			label: 'AV Cueboard IP Address',
 			width: 8,
 			default: '127.0.0.1',
 		},
 		{
 			type: 'number',
 			id: 'port',
-			label: 'acCompaniment Port',
+			label: 'AV Cueboard Port',
 			width: 4,
 			default: 8877, // Should match the port in Electron app
 			min: 1,

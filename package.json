@@ -1,15 +1,21 @@
 {
-	"name": "highpass-accompaniment",
-	"version": "1.3.0",
-	"description": "Companion module for the AcCompaniment soundboard app",
+	"name": "alanimedia-avcueboard",
+	"version": "1.10.0",
+	"description": "Companion module for AV Cueboard — live audio cue playback for Bitfocus Companion and Stream Deck",
 	"main": "main.js",
 	"scripts": {
 		"build": "yarn companion-module-build",
 		"lint": "eslint .",
 		"format": "prettier --write .",
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"setup:hooks": "git config core.hooksPath .githooks"
 	},
-	"author": "Marcin Wardecki",
+	"author": "Omar Gadahn, Alani Media",
+	"homepage": "https://alani.media",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/bitfocus/companion-module-alanimedia-avcueboard.git"
+	},
 	"license": "MIT",
 	"dependencies": {
 		"@companion-module/base": "^1.12.0",

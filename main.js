@@ -70,7 +70,7 @@ class SoundboardInstance extends InstanceBase {
 		}
 
 		const url = `ws://${this.config.host}:${this.config.port}`
-		this.log('info', `Connecting to acCompaniment at ${url}`)
+		this.log('info', `Connecting to AV Cueboard at ${url}`)
 
 		if (this.ws) {
 			this.ws.close() // Ensure old connection is closed
@@ -78,7 +78,7 @@ class SoundboardInstance extends InstanceBase {
 		this.ws = new WebSocket(url)
 
 		this.ws.on('open', () => {
-			this.log('info', 'Connected to acCompaniment')
+			this.log('info', 'Connected to AV Cueboard')
 			this.updateStatus(InstanceStatus.Ok)
 			if (this.reconnectInterval) {
 				clearInterval(this.reconnectInterval)
@@ -95,7 +95,7 @@ class SoundboardInstance extends InstanceBase {
 					this.cues = orderCuesFromPayload(message.payload)
 					this.sections = Array.isArray(message.payload.sections) ? message.payload.sections : []
 					this.layout = Array.isArray(message.payload.layout) ? message.payload.layout : []
-					this.log('info', `Received ${this.cues.length} cues from acCompaniment (layout order).`)
+					this.log('info', `Received ${this.cues.length} cues from AV Cueboard (layout order).`)
 					this.initActions()
 					this.initPresets()
 					// Rebuild variable definitions to match the live cue list
@@ -235,7 +235,7 @@ class SoundboardInstance extends InstanceBase {
 					}
 				}
 			} catch (e) {
-				this.log('error', 'Failed to parse message from acCompaniment: ' + e.toString())
+				this.log('error', 'Failed to parse message from AV Cueboard: ' + e.toString())
 			}
 		})
 

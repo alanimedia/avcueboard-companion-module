@@ -44,7 +44,7 @@ function getFeedbackDefinitions(self) {
 		cue_app_color: {
 			type: 'advanced',
 			name: 'Cue App Button Color',
-			description: 'Matches the cue button color from acCompaniment when idle.',
+			description: 'Matches the cue button color from AV Cueboard when idle.',
 			options: cueTargetOptions,
 			callback: (feedback) => {
 				const cueId = resolveFeedbackCueId(self, feedback.options)
