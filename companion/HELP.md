@@ -21,9 +21,10 @@ Download AV Cueboard: https://github.com/alanimedia/avcueboard
 ## Setup
 
 1. Run AV Cueboard and confirm WebSocket is enabled in App Config.
-2. Add this module in Companion:
-   - **Companion 4.x:** download [alanimedia-avcueboard-1.10.0.tgz](https://github.com/alanimedia/avcueboard-companion-module/raw/main/packages/alanimedia-avcueboard-1.10.0.tgz) and import under **Modules**.
-   - Or install from Connections when the store listing is available.
+2. Add this module in Companion (**4.x.x or greater**):
+   1. Download https://github.com/alanimedia/avcueboard-companion-module/raw/main/packages/alanimedia-avcueboard-1.10.0.tgz
+   2. Go to **Modules → Add Module Package** and select that `.tgz` file.
+   3. Or install from Connections when the store listing is available.
 3. Add an instance of **Alani Media → AVCueboard**.
 4. Set the IP and WebSocket port (`8877` by default).
 5. Import presets or assign actions — use **Trigger: &lt;cue name&gt;** actions for the most reliable cue targeting.

@@ -7,17 +7,18 @@ Companion module for **[AV Cueboard](https://github.com/alanimedia/avcueboard)**
 - **AV Cueboard** app v1.10.0+ with WebSocket enabled (default port **8877**)
 - Bitfocus Companion 3.x / 4.x+
 
-## Download packaged module (Companion 4.x)
+## Download packaged module (Companion 4.x.x or greater)
 
 Ready-to-install package (no Node/Yarn needed on the Companion machine):
 
-**[alanimedia-avcueboard-1.10.0.tgz](https://github.com/alanimedia/avcueboard-companion-module/raw/main/packages/alanimedia-avcueboard-1.10.0.tgz)**
+https://github.com/alanimedia/avcueboard-companion-module/raw/main/packages/alanimedia-avcueboard-1.10.0.tgz
 
-### Install in Companion 4.x (recommended)
+### Install in Companion 4.x.x or greater (recommended)
 
-1. Download the `.tgz` above.
-2. Open Companion Admin → **Modules**.
-3. Use **Import / Install custom module** and select the `.tgz`.
+1. Download the `.tgz` from the link above.
+2. Launch Companion and open the Admin UI.
+3. Go to **Modules → Add Module Package** and select that file.  
+   This adds it to the list of available modules.
 4. Go to **Connections** → add **Alani Media → AVCueboard**.
 5. Host: IP of the AV Cueboard PC (`127.0.0.1` if same machine). Port: **8877**.
 

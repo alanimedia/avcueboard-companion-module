@@ -1,6 +1,6 @@
 # Packaged Companion modules
 
-Pre-built `.tgz` files for installing in Companion 4.x via **Modules → Import custom module** (no developer mode required).
+Pre-built `.tgz` files for installing in Companion **4.x.x or greater** via **Modules → Add Module Package** (no developer mode required).
 
 | File | Version |
 |------|---------|
