@@ -2,17 +2,51 @@ name: Companion Module Checks
 
 on:
   push:
+  pull_request:
 
 jobs:
   check:
-    name: Check module
+    name: Build and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    if: ${{ !contains(github.repository, 'companion-module-template-') }}
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
-    permissions:
-      packages: read
+      - name: Enable corepack
+        run: corepack enable
 
-    uses: bitfocus/actions/.github/workflows/module-checks.yaml@main
-    # with:
-    #   upload-artifact: true # uncomment this to upload the built package as an artifact to this workflow that you can download and share with others
+      - name: Check lockfiles
+        run: |
+          if [ -f package-lock.json ]; then
+            echo "Error: package-lock.json found. This module uses Yarn."
+            exit 1
+          fi
+          if [ ! -f yarn.lock ]; then
+            echo "Error: yarn.lock not found."
+            exit 1
+          fi
 
+      - name: Install and build
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Verify package output
+        run: |
+          test -f alanimedia-avcueboard-*.tgz || test -f pkg.tgz
+          ls -la *.tgz 2>/dev/null || true
+          test -f companion/manifest.json
+          test -f companion/HELP.md
+          jq -e '.id == "alanimedia-avcueboard"' companion/manifest.json
+          jq -e '.products | length > 0' companion/manifest.json
+
+      # Official Bitfocus module-checks require the GitHub repo to be named
+      # companion-module-<manifest-id> (e.g. companion-module-alanimedia-avcueboard).
+      # Re-enable that reusable workflow after renaming, or when pushing to the Bitfocus org repo.
+      # uses: bitfocus/actions/.github/workflows/module-checks.yaml@main
