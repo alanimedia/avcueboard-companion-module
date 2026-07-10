@@ -21,12 +21,12 @@ Download AV Cueboard: https://github.com/alanimedia/avcueboard
 ## Setup
 
 1. Run AV Cueboard and confirm WebSocket is enabled in App Config.
-2. In Bitfocus Companion, add an instance of **Alani Media → AVCueboard**.
-3. Set the IP and WebSocket port (`8877` by default).
-4. Import presets or assign actions — use **Trigger: &lt;cue name&gt;** actions for the most reliable cue targeting.
+2. Add this module in Companion (from Connections when listed, or via **Developer modules path** — see the [app README](https://github.com/alanimedia/avcueboard#manual-module-install-until-store-approval)).
+3. Add an instance of **Alani Media → AVCueboard**.
+4. Set the IP and WebSocket port (`8877` by default).
+5. Import presets or assign actions — use **Trigger: &lt;cue name&gt;** actions for the most reliable cue targeting.
 
 ## Troubleshooting
 
 - If buttons stop working after an app update, re-import presets or switch actions to the per-cue **Trigger: ...** entries.
 - Confirm Companion connects on the WebSocket port, not the HTTP remote port (`3000` by default).
-- If you previously used the **HighPass → acCompaniment** module, remove that connection and add this module fresh.
